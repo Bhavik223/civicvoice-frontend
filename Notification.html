@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Civic Voice Notifications</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:sans-serif;background:#f5f7fa;padding:20px;}
+h1{text-align:center;color:#0A2540;}
+#notificationBtn{
+position:fixed;bottom:20px;right:20px;background:#1ABC9C;color:white;border:none;padding:15px;border-radius:50%;cursor:pointer;font-size:20px;box-shadow:0 4px 15px rgba(0,0,0,.2);}
+#notificationPanel{
+position:fixed;bottom:80px;right:20px;width:300px;max-height:400px;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.2);overflow:auto;padding:10px;display:none;}
+.notification{background:#ecf0f1;padding:10px;margin-bottom:10px;border-radius:10px;}
+.notification.resolved{border-left:5px solid #1ABC9C;}
+.notification.pending{border-left:5px solid #F39C12;}
+.notification.rejected{border-left:5px solid #E74C3C;}
+</style>
+</head>
+<body>
+
+<h1>📣 Civic Voice Notifications</h1>
+
+<button id="notificationBtn">🔔</button>
+<div id="notificationPanel"></div>
+
+<script>
+// Notification Data (simulate new updates)
+let notifications = [
+  {message:"Your complaint 'Broken Road' has been Resolved.", type:"resolved"},
+  {message:"New complaint submitted at Andheri.", type:"pending"},
+  {message:"Complaint 'Garbage Overflow' has been Rejected.", type:"rejected"}
+];
+
+// Load previous notifications from localStorage
+let saved = JSON.parse(localStorage.getItem('civicNotifications')) || [];
+notifications = [...saved, ...notifications];
+
+// Save updated notifications
+localStorage.setItem('civicNotifications', JSON.stringify(notifications));
+
+const notificationBtn = document.getElementById('notificationBtn');
+const notificationPanel = document.getElementById('notificationPanel');
+
+// Toggle panel
+notificationBtn.addEventListener('click', ()=>{
+    notificationPanel.style.display = notificationPanel.style.display==='none'?'block':'none';
+    renderNotifications();
+});
+
+// Render notifications
+function renderNotifications(){
+    notificationPanel.innerHTML = '';
+    notifications.slice().reverse().forEach(n=>{
+        const div = document.createElement('div');
+        div.className = 'notification '+n.type;
+        div.innerText = n.message;
+        notificationPanel.appendChild(div);
+    });
+}
+
+// Simulate real-time notifications every 10 seconds
+setInterval(()=>{
+    const newNotification = {message:"New complaint received at Mumbai Central.", type:"pending"};
+    notifications.push(newNotification);
+    localStorage.setItem('civicNotifications', JSON.stringify(notifications));
+    console.log("New notification added!");
+},10000);
+
+</script>
+
+</body>
+</html>
