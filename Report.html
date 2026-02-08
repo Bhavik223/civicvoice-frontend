@@ -259,9 +259,7 @@ button:hover{background:#16a085;transform:scale(1.02);}
 </div>
 
 <script>
-const API_URL = "https://civic-voice-backend-12mr.onrender.com";
-
-
+const API_URL = "https://civic-voice-backend-1.onrender.com";
 
 // Hamburger toggle
 function toggleSidebar(){
@@ -274,68 +272,53 @@ if(localStorage.getItem("civicAdmin") === "true"){
 }
 
 function submitComplaint(){
+  const name = document.getElementById("name").value.trim();
+  const location = document.getElementById("location").value.trim();
   const category = document.getElementById("category").value;
-  const location = document.getElementById("location").value;
-  const description = document.getElementById("details").value;
+  const description = document.getElementById("details").value.trim();
+  const token = localStorage.getItem("token");
 
-fetch("https://civic-voice-backend.onrender.com/api/issues", {
-  headers: {
-    "Authorization": "Bearer " + localStorage.getItem("token")
+  if(!name || !location || !description || category === "Select Category"){
+    alert("Please fill all required fields");
+    return;
   }
-})
-.then(res => res.json())
-.then(issues => {
-  console.log(issues);
-  // Render issues dynamically into table/cards
-});
 
-// AI Assistant simulation
-function aiAssist(){
-  const text = document.getElementById("aiInput").value;
-  if(!text){ 
-    document.getElementById("aiResponse").innerText="Please describe your issue.";
-  } else {
-    document.getElementById("details").value = text;
-    document.getElementById("aiResponse").innerText="✅ AI Assistant added your issue to the form!";
-    document.getElementById("aiInput").value="";
+  if(!token){
+    alert("Please login first");
+    window.location.href = "admin-login.html";
+    return;
   }
-}
 
-// PDF Download
-function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  const name = document.getElementById('name').value || "N/A";
-  const location = document.getElementById('location').value || "N/A";
-  const category = document.getElementById('category').value || "N/A";
-  const details = document.getElementById('details').value || "N/A";
-
-  doc.setFontSize(18);
-  doc.text("🏛 Civic Voice – Official Complaint", 20, 20);
-
-  doc.setFontSize(12);
-  const date = new Date().toLocaleString();
-  doc.text(`Date: ${date}`, 150, 20);
-
-  doc.setFontSize(14);
-  doc.text("Complaint Details:", 20, 40);
-
-  doc.setFontSize(12);
-  doc.text(`Name: ${name}`, 20, 50);
-  doc.text(`Location: ${location}`, 20, 60);
-  doc.text(`Category: ${category}`, 20, 70);
-  doc.text("Details:", 20, 80);
-
-  const splitDetails = doc.splitTextToSize(details, 170);
-  doc.text(splitDetails, 20, 90);
-
-  doc.setFontSize(10);
-  doc.text("Generated via Civic Voice Portal", 20, 280);
-
-  doc.save("CivicVoice_Complaint.pdf");
+  fetch(API_URL + "/api/issues", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      name,
+      location,
+      category,
+      description
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      alert("✅ Complaint submitted successfully!");
+      document.querySelector(".form-card form")?.reset();
+      document.getElementById("details").value = "";
+    } else {
+      alert(data.message || "Submission failed");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Server error. Try again later.");
+  });
 }
 </script>
+
 <br><br><footer>
   <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px; height:30px; vertical-align:middle;">
   Civic Voice © 2026 | Professional Government Portal

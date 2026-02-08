@@ -238,14 +238,19 @@ body{
 </div>
 
 <script>
+const API_URL ="https://civic-voice-backend-1.onrender.com";
+let issues = [];
 
-const API_URL ="https://civic-voice-backend-12mr.onrender.com";
+// Protect admin page
+if(!localStorage.getItem("token")){
+  alert("Unauthorized access");
+  window.location.href = "admin-login.html";
+}
 
 // Hamburger toggle
 function toggleSidebar(){
   document.getElementById("sidebar").classList.toggle("active");
 }
-
 
 function loadIssues(){
   fetch(API_URL + "/api/admin/issues", {
@@ -254,7 +259,14 @@ function loadIssues(){
     }
   })
   .then(res => res.json())
-  .then(data => renderIssues(data));
+  .then(data => {
+    issues = data;
+    renderIssues(issues);
+  })
+  .catch(err=>{
+    console.error(err);
+    alert("Failed to load issues");
+  });
 }
 
 window.onload = loadIssues;
@@ -263,40 +275,23 @@ window.onload = loadIssues;
 function renderIssues(list){
   const container = document.getElementById("issuesContainer");
   container.innerHTML="";
-  if(list.length===0){ container.innerHTML="<p>No issues found.</p>"; return; }
+  if(list.length===0){ 
+    container.innerHTML="<p>No issues found.</p>"; 
+    return; 
+  }
 
   list.forEach(issue=>{
     let card = document.createElement("div");
     card.className = "issue-card "+(issue.privacy==="private"?"private":"");
     card.innerHTML=`
-      <h3>${issue.category} (${issue.privacy.toUpperCase()})</h3>
+      <h3>${issue.category}</h3>
       <p><span>Name:</span> ${issue.privacy==="private"?"Anonymous":issue.name}</p>
       <p><span>Location:</span> ${issue.location}</p>
-      <p><span>Details:</span> ${issue.details}</p>
+      <p><span>Details:</span> ${issue.description}</p>
       <p><span>Status:</span> ${issue.status}</p>
-      <p><span>Date:</span> ${issue.date}</p>
-      <div class="rating-section">
-        <p>Rate this issue:</p>
-        <div class="stars">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">★</span>
-          <span class="star" data-value="5">★</span>
-        </div>
-        <textarea placeholder="Leave feedback..." class="feedback"></textarea>
-        <button onclick="submitRating(this)">Submit</button>
-      </div>
+      <p><span>Date:</span> ${new Date(issue.createdAt).toLocaleString()}</p>
     `;
     container.appendChild(card);
-  });
-
-  document.querySelectorAll('.stars .star').forEach(star=>{
-    star.addEventListener('click', function(){
-      const starsContainer = star.parentElement;
-      starsContainer.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-      star.classList.add('selected');
-    });
   });
 }
 
@@ -313,24 +308,8 @@ function filterIssues(){
 
   renderIssues(filtered);
 }
-
-// Submit rating
-function submitRating(button){
-  const section = button.parentElement;
-  const starEl = section.querySelector('.star.selected');
-  const rating = starEl ? starEl.dataset.value : 0;
-  const feedback = section.querySelector('.feedback').value;
-
-  if(rating===0){ alert("Please select a rating!"); return; }
-
-  alert("✅ Thank you! Rating: " + rating + " stars\nFeedback: " + feedback);
-  section.querySelector('.feedback').value='';
-  section.querySelectorAll('.star').forEach(s=>s.classList.remove('selected'));
-}
-
-// Initial render
-renderIssues(issues);
 </script>
+
   <br><br><footer>
  <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px; height:30px; vertical-align:middle;">
   Civic Voice © 2026 | Professional Government Portal

@@ -140,30 +140,45 @@ button{
 </div>
 
 <script>
-fetch("https://civic-voice-backend.onrender.com/api/auth/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    email: email,
-    password: password
-  })
-})
-.then(res => res.json())
-.then(data => {
-  if (data.token) {
-    localStorage.setItem("token", data.token);
+function login() {
+  const email = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+  const msg = document.getElementById("msg");
 
-    if (data.isAdmin) {
-      localStorage.setItem("civicAdmin", "true");
-      window.location = "admin.html";
-    } else {
-      window.location = "Home.html";
-    }
-  } else {
-    alert(data.msg || "Login failed");
+  if (!email || !password) {
+    msg.innerText = "Please enter username and password";
+    return;
   }
-});
+
+  fetch("https://civic-voice-backend-1.onrender.com/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+
+      if (data.isAdmin) {
+        localStorage.setItem("civicAdmin", "true");
+        window.location.href = "Admin.html";
+      } else {
+        window.location.href = "Home.html";
+      }
+    } else {
+      msg.innerText = data.msg || "Login failed";
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    msg.innerText = "Server error. Try again later.";
+  });
+}
 </script>
+
 
 <br><br>
 <footer>
