@@ -410,6 +410,18 @@ function toggleSidebar() {
 if (localStorage.getItem("role") === "admin") {
   document.getElementById("adminLink").style.display = "block";
 }
+const token = localStorage.getItem("token");
+
+if (token) {
+  document.querySelector(".top-buttons").innerHTML = `
+    <button onclick="logout()">Logout</button>
+  `;
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
 </script>
 
 

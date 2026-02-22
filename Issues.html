@@ -238,6 +238,10 @@ body{
 </div>
 
 <script>
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+
 const API_URL ="https://civic-voice-backend-1.onrender.com";
 let issues = [];
 

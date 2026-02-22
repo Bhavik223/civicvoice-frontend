@@ -259,6 +259,9 @@ button:hover{background:#16a085;transform:scale(1.02);}
 </div>
 
 <script>
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
 const API_URL = "https://civic-voice-backend-1.onrender.com";
 
 // Hamburger toggle

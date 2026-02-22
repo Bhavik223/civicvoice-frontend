@@ -25,6 +25,9 @@ position:fixed;bottom:80px;right:20px;width:300px;max-height:400px;background:wh
 <div id="notificationPanel"></div>
 
 <script>
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
 // Notification Data (simulate new updates)
 let notifications = [
   {message:"Your complaint 'Broken Road' has been Resolved.", type:"resolved"},

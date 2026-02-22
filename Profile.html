@@ -202,6 +202,10 @@ footer {
 </div>
 
 <script>
+
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
 const API_URL = "https://civic-voice-backend-1.onrender.com";
 const token = localStorage.getItem("token");
 
@@ -260,6 +264,7 @@ function loadMyIssues(){
 
 loadProfile();
 loadMyIssues();
+
 </script>
 
 <footer>
