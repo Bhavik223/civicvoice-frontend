@@ -285,8 +285,7 @@ document.getElementById("sidebar").classList.toggle("active");
 
 /* ADMIN CHECK */
 
-fetch(API+"/api/auth/check",{credentials:"include"})
-.then(res=>res.json())
+fetch(API+"/api/issues",{credentials:"include"}).then(res=>res.json())
 .then(data=>{
 if(data.loggedIn && data.user.role==="admin"){
 document.getElementById("adminLink").style.display="block";
@@ -297,38 +296,37 @@ document.getElementById("adminLink").style.display="block";
 
 function loadIssues(){
 
-fetch(API+"/api/issues")
-
+fetch(API+"/api/issues",{credentials:"include"})
 .then(res=>res.json())
 
 .then(data=>{
 
-issues=data;
+issues = data.issues || [];   // FIX
 
 updateStats();
 
-renderIssues(data);
+renderIssues(issues);         // FIX
 
-});
+})
+
+.catch(err=>console.error("Issue load error:",err));
 
 }
-
 window.onload=loadIssues;
 
 /* STATS */
 
 function updateStats(){
 
-document.getElementById("totalIssues").innerText=issues.length;
+document.getElementById("totalIssues").innerText = issues.length;
 
-document.getElementById("pendingIssues").innerText=
-issues.filter(i=>i.status==="Pending").length;
+document.getElementById("pendingIssues").innerText =
+issues.filter(i => i.status === "Pending").length;
 
-document.getElementById("resolvedIssues").innerText=
-issues.filter(i=>i.status==="Resolved").length;
+document.getElementById("resolvedIssues").innerText =
+issues.filter(i => i.status === "Resolved").length;
 
 }
-
 /* RENDER */
 
 function renderIssues(list){
@@ -414,10 +412,10 @@ document.getElementById("searchInput")
 
 let q=this.value.toLowerCase();
 
-let filtered=issues.filter(i=>
+let filtered = issues.filter(i =>
 
-i.category.toLowerCase().includes(q) ||
-i.location.toLowerCase().includes(q)
+(i.category || "").toLowerCase().includes(q) ||
+(i.location || "").toLowerCase().includes(q)
 
 );
 
