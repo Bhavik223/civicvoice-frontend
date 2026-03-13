@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,12 +92,8 @@ z-index:1100;
 /* Main */
 
 .main{
-margin-left:260px;
-padding:40px;
-}
-
-.sidebar ~ .main{
 margin-left:0;
+padding:40px;
 }
 
 /* Topbar */
@@ -210,6 +206,7 @@ color:var(--text-light);
 text-align:center;
 padding:20px;
 font-size:14px;
+margin-top:40px;
 }
 
 </style>
@@ -240,7 +237,7 @@ font-size:14px;
 
 <div class="main">
 
-<div class="topbar" id="topbar">
+<div class="topbar">
 <button onclick="logout()">Logout</button>
 </div>
 
@@ -293,9 +290,10 @@ font-size:14px;
 </div>
 
 </div>
+
 <script>
 
-/* API */
+/* API URL */
 
 const API_URL="https://civic-voice-backend-1.onrender.com";
 
@@ -304,11 +302,8 @@ const API_URL="https://civic-voice-backend-1.onrender.com";
 const user = JSON.parse(localStorage.getItem("civicUser"));
 
 if(!user){
-
 alert("Please login first");
-
 window.location.href = "login.html";
-
 }
 
 /* SIDEBAR */
@@ -327,20 +322,14 @@ URL.createObjectURL(e.target.files[0]);
 /* LOGOUT */
 
 function logout(){
-
 localStorage.removeItem("civicUser");
-
 window.location.href="login.html";
-
 }
 
 /* LOAD PROFILE */
 
 function loadProfile(){
-
-document.getElementById("userName").innerText=user.name;
-document.getElementById("userRole").innerText="Citizen";
-
+document.getElementById("userName").innerText = user.name || "Citizen";
 }
 
 /* LOAD MY ISSUES */
@@ -363,7 +352,7 @@ const box=document.getElementById("myIssues");
 box.innerHTML="";
 
 issues
-.filter(i=>i.userId===user.id)
+.filter(i => i.email === user.email)
 .forEach(issue=>{
 
 if(issue.status==="Resolved"){
@@ -388,15 +377,15 @@ ${issue.status}
 
 });
 
-document.getElementById("totalCount").innerText=issues.length;
-document.getElementById("resolvedCount").innerText=resolved;
-document.getElementById("pendingCount").innerText=pending;
+document.getElementById("totalCount").innerText = pending + resolved;
+document.getElementById("resolvedCount").innerText = resolved;
+document.getElementById("pendingCount").innerText = pending;
 
 });
 
 }
 
-* A/DMIN CHECK */
+/* ADMIN CHECK */
 
 fetch(API_URL+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
@@ -411,9 +400,13 @@ document.getElementById("adminLink").style.display="block";
 loadProfile();
 loadMyIssues();
 
+</script>
+
 <footer>
-  <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px;height:30px;vertical-align:middle;">
-  Civic Voice © 2026 | Professional Government Portal
+<img src="images/cv-logo.png" style="width:30px;height:30px;vertical-align:middle;">
+Civic Voice © 2026 | Professional Government Portal
 </footer>
+
 </body>
 </html>
+```
