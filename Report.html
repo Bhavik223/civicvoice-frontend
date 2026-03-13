@@ -29,8 +29,6 @@ background:var(--bg);
 overflow-x:hidden;
 }
 
-/* Sidebar */
-
 .sidebar{
 position:fixed;
 top:0;
@@ -84,8 +82,6 @@ left:15px;
 color:var(--primary);
 z-index:1100;
 }
-
-/* Main */
 
 .main{
 margin-left:0;
@@ -159,7 +155,6 @@ margin-top:40px;
 }
 
 @media(max-width:800px){
-
 .form-grid{
 grid-template-columns:1fr;
 }
@@ -167,7 +162,6 @@ grid-template-columns:1fr;
 textarea{
 grid-column:1;
 }
-
 }
 
 </style>
@@ -178,8 +172,7 @@ grid-column:1;
 <div class="sidebar" id="sidebar">
 
 <div class="sidebar-header">
- <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:60px; height:60px; display:block; margin:0 auto;">
-
+<img src="images/cv-logo.png" style="width:60px;height:60px;display:block;margin:0 auto;">
 <h2>Civic Voice</h2>
 </div>
 
@@ -247,57 +240,43 @@ grid-column:1;
 </div>
 
 <footer>
-  <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px;height:30px;vertical-align:middle;">
-  Civic Voice © 2026 | Professional Government Portal
+<img src="images/cv-logo.png" style="width:30px;height:30px;vertical-align:middle;">
+Civic Voice © 2026 | Professional Government Portal
 </footer>
+
 <script>
 
-const API_URL = "https://civic-voice-backend-1.onrender.com";
+const API_URL="https://civic-voice-backend-1.onrender.com";
 
-/* ---------- SIDEBAR ---------- */
+/* SIDEBAR */
 
 function toggleSidebar(){
 document.getElementById("sidebar").classList.toggle("active");
 }
 
-/* ---------- ADMIN LINK ---------- */
+/* ADMIN CHECK */
 
-fetch(API_URL + "/api/auth/check",{
-credentials:"include"
-})
+fetch(API_URL+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
 .then(data=>{
-
 if(data.loggedIn && data.user && data.user.role==="admin"){
 document.getElementById("adminLink").style.display="block";
 }
-
-})
-.catch(err=>{
-console.log("Auth check failed",err);
 });
 
-/* ---------- AUTO LOCATION ---------- */
+/* GEO LOCATION */
 
-let latitude = null;
-let longitude = null;
+let latitude=null;
+let longitude=null;
 
 if(navigator.geolocation){
-
 navigator.geolocation.getCurrentPosition(function(position){
-
-latitude = position.coords.latitude;
-longitude = position.coords.longitude;
-
-},function(){
-
-console.log("Location permission denied");
-
+latitude=position.coords.latitude;
+longitude=position.coords.longitude;
 });
-
 }
 
-/* ---------- SUBMIT COMPLAINT ---------- */
+/* SUBMIT ISSUE */
 
 function submitComplaint(){
 
@@ -307,7 +286,7 @@ const category=document.getElementById("category").value;
 const description=document.getElementById("details").value.trim();
 
 const fileInput=document.querySelector("input[type='file']");
-const photo=fileInput ? fileInput.files[0] : null;
+const photo=fileInput.files[0];
 
 if(!name || !location || !description || category==="Select Category"){
 alert("Please fill all fields");
@@ -329,17 +308,14 @@ formData.append("photo",photo);
 }
 
 fetch(API_URL+"/api/issues",{
-
 method:"POST",
 credentials:"include",
 body:formData
-
 })
 .then(res=>res.json())
-
 .then(data=>{
 
-if(data && (data.message || data.success)){
+if(data.message){
 
 alert("✅ Complaint submitted successfully!");
 
@@ -347,7 +323,7 @@ document.getElementById("name").value="";
 document.getElementById("location").value="";
 document.getElementById("category").selectedIndex=0;
 document.getElementById("details").value="";
-if(fileInput) fileInput.value="";
+fileInput.value="";
 
 }else{
 
@@ -356,15 +332,15 @@ alert(data.message || "Submission failed");
 }
 
 })
-
 .catch(err=>{
-console.error("Submission error:",err);
+console.error(err);
 alert("Server error");
 });
 
 }
 
 </script>
+
 
 </body>
 </html>

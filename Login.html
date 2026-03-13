@@ -112,7 +112,8 @@ color:red;
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+const data = await response.json();
+console.log("SERVER RESPONSE:", data);
 
       if (response.ok) {
         localStorage.setItem("civicUser", JSON.stringify(data.user));
