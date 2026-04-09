@@ -298,141 +298,52 @@ padding:20px;
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
-const API_URL="https://civic-voice-backend-1.onrender.com";
-
 function toggleSidebar(){
-document.getElementById("sidebar").classList.toggle("active");
+  document.getElementById("sidebar").classList.toggle("active");
 }
 
-/* LOGIN CHECK */
+function login(){
+  const email = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+  const msg = document.getElementById("msg");
 
-fetch(API_URL+"/api/auth/check",{credentials:"include"})
-.then(res=>res.json())
-.then(data=>{
+  msg.innerText = "";
 
-if(data.loggedIn){
+  if(!email || !password){
+    msg.innerText = "Please enter username and password";
+    return;
+  }
 
-document.getElementById("topButtons").innerHTML=
-`<button onclick="logout()">Logout</button>`;
+  fetch("https://civic-voice-backend-1.onrender.com/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({ email, password })
+  })
+  .then(async res => {
+    const data = await res.json();
 
-if(data.user.role==="admin")
-document.getElementById("adminLink").style.display="block";
+    if(res.ok){
+      localStorage.setItem("civicUser", JSON.stringify(data.user));
 
+      if(data.role === "admin"){
+        localStorage.setItem("civicAdmin", "true");
+        window.location.href = "Admin.html";
+      } else {
+        localStorage.removeItem("civicAdmin");
+        msg.innerText = "This login is only for admin";
+      }
+    } else {
+      msg.innerText = data.message || "Login failed";
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    msg.innerText = "Server error. Try again later.";
+  });
 }
-
-})
-.catch(()=>{});
-
-/* LOGOUT */
-
-function logout(){
-
-localStorage.clear();
-window.location.href="login.html";
-
-}
-
-/* MAP INIT */
-
-const map=L.map('map').setView([19.0760,72.8777],12);
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{attribution:'Civic Voice Map'}
-).addTo(map);
-
-/* ICONS */
-
-const redIcon=new L.Icon({
-iconUrl:"https://maps.gstatic.com/mapfiles/ms2/micons/red.png",
-iconSize:[32,32]
-});
-
-const greenIcon=new L.Icon({
-iconUrl:"https://maps.gstatic.com/mapfiles/ms2/micons/green.png",
-iconSize:[32,32]
-});
-
-/* LOAD ISSUES */
-
-fetch(API_URL+"/api/issues")
-
-.then(res=>res.json())
-
-.then(data=>{
-
-const issues=data.issues || data || [];
-
-const total=issues.length;
-
-const resolved=issues.filter(i=>i.status==="Resolved").length;
-
-const pending=total-resolved;
-
-document.getElementById("totalIssues").innerText=total;
-document.getElementById("resolvedIssues").innerText=resolved;
-document.getElementById("pendingIssues").innerText=pending;
-
-/* Latest */
-
-const latest=document.getElementById("latestIssues");
-
-latest.innerHTML="";
-
-issues.slice(0,5).forEach(issue=>{
-
-const color=issue.status==="Resolved"?"green":"#F39C12";
-
-latest.innerHTML+=`
-
-<div class="issue-card">
-
-<img src="${issue.photo || "https://via.placeholder.com/120x100"}">
-
-<div>
-
-<h4>${issue.category || "Issue"}</h4>
-
-<p>Status:
-<span style="color:${color}">
-${issue.status || "Pending"}
-</span>
-</p>
-
-</div>
-
-</div>
-
-`;
-
-});
-
-/* Map Markers */
-
-issues.forEach(issue=>{
-
-if(issue.latitude && issue.longitude){
-
-L.marker(
-[issue.latitude,issue.longitude],
-{icon:issue.status==="Resolved"?greenIcon:redIcon}
-)
-
-.addTo(map)
-
-.bindPopup(
-`<b>${issue.category}</b><br>${issue.location}<br>Status:${issue.status}`
-);
-
-}
-
-});
-
-})
-
-.catch(err=>console.log("Issues error",err));
-
 </script>
 
 <footer>

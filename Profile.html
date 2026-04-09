@@ -293,99 +293,61 @@ margin-top:40px;
 
 <script>
 
-/* API URL */
-
 const API_URL="https://civic-voice-backend-1.onrender.com";
-
-/* CHECK LOGIN */
 
 const user = JSON.parse(localStorage.getItem("civicUser"));
 
 if(!user){
 alert("Please login first");
-window.location.href = "login.html";
-}
-
-/* SIDEBAR */
-
-function toggleSidebar(){
-document.getElementById("sidebar").classList.toggle("active");
-}
-
-/* PROFILE IMAGE PREVIEW */
-
-function loadPic(e){
-document.getElementById("profileImg").src =
-URL.createObjectURL(e.target.files[0]);
-}
-
-/* LOGOUT */
-
-function logout(){
-localStorage.removeItem("civicUser");
 window.location.href="login.html";
 }
 
-/* LOAD PROFILE */
+/* PROFILE */
 
 function loadProfile(){
-document.getElementById("userName").innerText = user.name || "Citizen";
+document.getElementById("userName").innerText=user.name;
 }
 
-/* LOAD MY ISSUES */
+/* LOAD USER ISSUES */
 
 function loadMyIssues(){
 
-fetch(API_URL+"/api/issues")
-
+fetch(API_URL+"/api/issues/my",{credentials:"include"})
 .then(res=>res.json())
-
 .then(data=>{
 
-const issues = data.issues || [];
+const issues = Array.isArray(data) ? data : [];
 
-let pending=0;
-let resolved=0;
+let pending=0,resolved=0;
 
 const box=document.getElementById("myIssues");
-
 box.innerHTML="";
 
-issues
-.filter(i => i.email === user.email)
-.forEach(issue=>{
+issues.forEach(issue=>{
 
-if(issue.status==="Resolved"){
-resolved++;
-}else{
-pending++;
-}
+if(issue.status==="Resolved") resolved++;
+else pending++;
 
 box.innerHTML+=`
-
 <div class="issue-item">
-
 <strong>${issue.category} – ${issue.location}</strong><br>
-
 <span class="badge ${issue.status==="Resolved"?"resolved":"pending"}">
 ${issue.status}
 </span>
-
 </div>
-
 `;
 
 });
 
-document.getElementById("totalCount").innerText = pending + resolved;
-document.getElementById("resolvedCount").innerText = resolved;
-document.getElementById("pendingCount").innerText = pending;
+document.getElementById("totalCount").innerText=issues.length;
+document.getElementById("resolvedCount").innerText=resolved;
+document.getElementById("pendingCount").innerText=pending;
 
 });
 
 }
 
-/* ADMIN CHECK */
+/* ADMIN */
 
 fetch(API_URL+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
@@ -395,7 +357,13 @@ document.getElementById("adminLink").style.display="block";
 }
 });
 
-/* INIT */
+/* LOGOUT */
+
+function logout(){
+fetch(API_URL+"/api/auth/logout",{method:"POST",credentials:"include"});
+localStorage.clear();
+window.location.href="login.html";
+}
 
 loadProfile();
 loadMyIssues();
