@@ -281,9 +281,8 @@ function toggleSidebar(){
 function getImageUrl(photo) {
   if (!photo) return "";
 
-  if (photo.startsWith("http")) return photo;
-
-  return `${API_BASE}${photo}`;
+  // ALWAYS add backend URL properly
+  return "https://civic-voice-backend-1.onrender.com" + photo;
 }
 
 /* STATUS */
