@@ -244,18 +244,13 @@ grid-column:1;
 <img src="images/cv-logo.png" style="width:30px;height:30px;vertical-align:middle;">
 Civic Voice © 2026 | Professional Government Portal
 </footer>
-
 <script>
 
 const API_URL="https://civic-voice-backend-1.onrender.com";
 
-/* SIDEBAR */
-
 function toggleSidebar(){
 document.getElementById("sidebar").classList.toggle("active");
 }
-
-/* ADMIN CHECK */
 
 fetch(API_URL+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
@@ -264,8 +259,6 @@ if(data.loggedIn && data.user && data.user.role==="admin"){
 document.getElementById("adminLink").style.display="block";
 }
 });
-
-/* GEO LOCATION */
 
 let latitude=null;
 let longitude=null;
@@ -276,8 +269,6 @@ latitude=position.coords.latitude;
 longitude=position.coords.longitude;
 });
 }
-
-/* SUBMIT ISSUE */
 
 function submitComplaint(){
 
@@ -313,7 +304,15 @@ method:"POST",
 credentials:"include",
 body:formData
 })
-.then(res=>res.json())
+.then(async res => {
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Server error");
+  }
+
+  return data;
+})
 .then(data=>{
 
 if(data.issue){
@@ -335,7 +334,7 @@ alert(data.message || "Submission failed");
 })
 .catch(err=>{
 console.error(err);
-alert("Server error");
+alert(err.message);
 });
 
 }
