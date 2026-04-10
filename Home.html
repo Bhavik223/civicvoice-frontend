@@ -378,44 +378,61 @@ const map = L.map("map").setView([19.0760,72.8777],12);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
+const pendingIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+  iconSize: [32, 32]
+});
 
+const resolvedIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+  iconSize: [32, 32]
+});
+
+const defaultIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+  iconSize: [32, 32]
+});
 function loadMapMarkers(issues){
 
- console.log("ALL ISSUES:", issues); // 👈 ADD THIS
+map.eachLayer(layer=>{
+  if(layer instanceof L.Marker){
+    map.removeLayer(layer);
+  }
+});
 
   issues.forEach(issue=>{
-    console.log("LAT:", issue.latitude, "LNG:", issue.longitude);
 
-    const lat = parseFloat(issue.latitude);
-    const lng = parseFloat(issue.longitude);
+ const lat = issue.latitude ? parseFloat(issue.latitude) : 19.0760;
+const lng = issue.longitude ? parseFloat(issue.longitude) : 72.8777;
 
-    if(!isNaN(lat) && !isNaN(lng)){
+ if(!isNaN(lat) && !isNaN(lng)){
 
-      // ✅ Fix image URL
-      let imgUrl = "";
+      let icon = defaultIcon;
 
-      if(issue.photo){
-        imgUrl = issue.photo.startsWith("http")
-          ? issue.photo
-          : API_BASE + issue.photo;
+      if(issue.status === "Resolved"){
+        icon = resolvedIcon;
+      } else if(issue.status === "Pending"){
+        icon = pendingIcon;
       }
 
-      // ✅ Add marker + popup
-      L.marker([lat, lng])
+      let imgUrl = issue.photo
+        ? (issue.photo.startsWith("http") ? issue.photo : API_BASE + issue.photo)
+        : "";
+
+      L.marker([lat, lng], { icon })
       .addTo(map)
       .bindPopup(`
         <div style="width:200px">
-          
+
           <h4>${issue.category}</h4>
-          
+
           <p><b>📍 ${issue.location}</b></p>
 
           <p>${issue.description}</p>
 
           ${
-            imgUrl 
-            ? `<img src="${imgUrl}" 
-                   style="width:100%;border-radius:8px;">`
+            imgUrl
+            ? `<img src="${imgUrl}" style="width:100%;border-radius:8px;">`
             : ""
           }
 
@@ -427,7 +444,18 @@ function loadMapMarkers(issues){
   });
 
 }
+setInterval(async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/issues`);
+    const issues = await res.json();
 
+    loadMapMarkers(issues);
+    updateStats(issues);
+
+  } catch(err){
+    console.log("Live update error", err);
+  }
+}, 5000);
 loadLatestIssues();
 </script>
 <footer>
