@@ -279,12 +279,16 @@ function toggleSidebar(){
 
 /* IMAGE FIX */
 function getImageUrl(photo) {
-  if (!photo) return "";
+  if (!photo) return "images/cv-logo.png";
 
-  // ALWAYS add backend URL properly
-  return "https://civic-voice-backend-1.onrender.com" + photo;
+  // If Cloudinary image
+  if (photo.startsWith("http")) {
+    return photo;
+  }
+
+  // Old local images (optional fallback)
+  return API_BASE + photo;
 }
-
 /* STATUS */
 function getStatusText(status){
   return status || "Pending";
@@ -355,10 +359,9 @@ function loadMapMarkers(issues){
 
 loadLatestIssues();
 </script>
-
 <footer>
-<img src="images/cv-logo.png" style="width:30px;height:30px;">
-Civic Voice © 2026
+  <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px;height:30px;vertical-align:middle;">
+  Civic Voice © 2026 | Professional Government Portal
 </footer>
 
 </body>

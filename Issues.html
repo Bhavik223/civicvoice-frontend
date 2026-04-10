@@ -343,8 +343,11 @@ card.className="issue-card";
 card.innerHTML=`
 
 <img class="issue-img"
-src="${issue.photo ? API + issue.photo : 'https://via.placeholder.com/600x220'}"
-onclick="zoomImage(this.src)">
+src="${
+  issue.photo
+    ? (issue.photo.startsWith("http") ? issue.photo : API + issue.photo)
+    : 'https://via.placeholder.com/600x220'
+}"onclick="zoomImage(this.src)">
 
 <div class="issue-body">
 
