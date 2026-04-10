@@ -208,12 +208,6 @@ color:white;
 text-align:center;
 padding:20px;
 }
-.card p{
-  font-size:14px;
-  color:#555;
-  margin-top:10px;
-  line-height:1.5;
-}
 
 </style>
 </head>
@@ -230,17 +224,12 @@ padding:20px;
 </div>
 
 <div class="hamburger" onclick="toggleSidebar()">☰</div>
-<div class="topbar">
 
-<button id="loginBtn" onclick="location.href='login.html'">Login</button>
-
-<button id="logoutBtn" onclick="logout()" style="display:none;">
-Logout
-</button>
-
-</div>
 <section class="hero">
-
+<div class="top-buttons">
+<button onclick="window.location='login.html'">Login</button>
+<button onclick="window.location='signup.html'">Signup</button>
+</div>
 
 <h1>Empowering Citizens, Improving Cities</h1>
 <p>Report civic issues and track their resolution</p>
@@ -248,37 +237,10 @@ Logout
 </section>
 
 <section class="services">
-<div class="card">
-  <h3>🚧 Road Issues</h3>
-  <p>
-    Report potholes, broken roads, damaged footpaths, or unsafe streets.
-    Help authorities maintain smooth and safe transportation.
-  </p>
-</div>
-
-<div class="card">
-  <h3>🗑 Garbage</h3>
-  <p>
-    Report garbage overflow, illegal dumping, or unclean public areas.
-    Keep your city clean and hygienic.
-  </p>
-</div>
-
-<div class="card">
-  <h3>💧 Water Leakage</h3>
-  <p>
-    Report leaking pipelines, water wastage, or drainage issues.
-    Help save water and prevent damage.
-  </p>
-</div>
-
-<div class="card">
-  <h3>💡 Streetlights</h3>
-  <p>
-    Report non-working or damaged streetlights.
-    Improve visibility and ensure safety at night.
-  </p>
-</div>
+<div class="card"><h3>🚧 Road Issues</h3></div>
+<div class="card"><h3>🗑 Garbage</h3></div>
+<div class="card"><h3>💧 Water Leakage</h3></div>
+<div class="card"><h3>💡 Streetlights</h3></div>
 </section>
 
 <section class="stats">
@@ -310,19 +272,7 @@ Logout
 
 <script>
 const API_BASE = "https://civic-voice-backend-1.onrender.com";
-fetch(API_BASE+"/api/auth/check",{credentials:"include"})
-.then(res=>res.json())
-.then(data=>{
 
-if(data.loggedIn){
-  document.getElementById("loginBtn")?.style.display="none";
-  document.getElementById("logoutBtn")?.style.display="inline-block";
-}else{
-  document.getElementById("loginBtn")?.style.display="inline-block";
-  document.getElementById("logoutBtn")?.style.display="none";
-}
-
-});
 function toggleSidebar(){
   document.getElementById("sidebar").classList.toggle("active");
 }
@@ -396,86 +346,18 @@ const map = L.map("map").setView([19.0760,72.8777],12);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
-fetch(API_URL+"/api/issues")
-.then(res=>res.json())
-.then(issues=>{
 
-issues.forEach(issue=>{
-
-if(issue.latitude && issue.longitude){
-
-L.marker([issue.latitude, issue.longitude])
-.addTo(map)
-.bindPopup(`
-<b>${issue.category}</b><br>
-${issue.location}<br>
-
-<p>${issue.description}</p>
-
-${issue.photo ? `<img src="${issue.photo}" width="150">` : ""}
-`);
-
-}
-
-});
-
-});
 function loadMapMarkers(issues){
-
- console.log("ALL ISSUES:", issues); // 👈 ADD THIS
-
   issues.forEach(issue=>{
-    console.log("LAT:", issue.latitude, "LNG:", issue.longitude);
-
-    const lat = parseFloat(issue.latitude);
-    const lng = parseFloat(issue.longitude);
-
-    if(!isNaN(lat) && !isNaN(lng)){
-
-      // ✅ Fix image URL
-      let imgUrl = "";
-
-      if(issue.photo){
-        imgUrl = issue.photo.startsWith("http")
-          ? issue.photo
-          : API_BASE + issue.photo;
-      }
-
-      // ✅ Add marker + popup
-      L.marker([lat, lng])
+    if(issue.latitude && issue.longitude){
+      L.marker([issue.latitude,issue.longitude])
       .addTo(map)
-      .bindPopup(`
-        <div style="width:200px">
-          
-          <h4>${issue.category}</h4>
-          
-          <p><b>📍 ${issue.location}</b></p>
-
-          <p>${issue.description}</p>
-
-          ${
-            imgUrl 
-            ? `<img src="${imgUrl}" 
-                   style="width:100%;border-radius:8px;">`
-            : ""
-          }
-
-        </div>
-      `);
-
+      .bindPopup(issue.category);
     }
-
   });
-
 }
+
 loadLatestIssues();
-function logout(){
-  fetch(API_URL+"/api/auth/logout",{
-    method:"POST",
-    credentials:"include"
-  });
-  window.location.href="login.html";
-}
 </script>
 <footer>
   <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px;height:30px;vertical-align:middle;">
