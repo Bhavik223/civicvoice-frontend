@@ -355,15 +355,12 @@ box.innerHTML+=`
 ${issue.status}
 </span>
 
-<br>
-<p style="margin-top:6px;color:#444;font-size:14px;">
-📝 ${issue.description || "No description"}
-</p>
-
-${issue.photo ? `<img src="${issue.photo}" style="width:100px;border-radius:8px;margin-top:5px;">` : ""}
+${issue.photo ? `<br><img src="${issue.photo}" style="width:100px;border-radius:8px;margin-top:5px;">` : ""}
 
 </div>
 `;
+
+});
 
 document.getElementById("totalCount").innerText=issues.length;
 document.getElementById("resolvedCount").innerText=resolved;
