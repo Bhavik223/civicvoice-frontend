@@ -238,9 +238,14 @@ margin-top:40px;
 <div class="main">
 
 <div class="topbar">
-<button onclick="logout()">Logout</button>
-</div>
 
+<button id="loginBtn" onclick="location.href='login.html'">Login</button>
+
+<button id="logoutBtn" onclick="logout()" style="display:none;">
+Logout
+</button>
+
+</div>
 <!-- PROFILE HEADER -->
 
 <div class="header">
@@ -298,7 +303,19 @@ Save Profile
 <script>
 
 const API_URL="https://civic-voice-backend-1.onrender.com";
+fetch(API_URL+"/api/auth/check",{credentials:"include"})
+.then(res=>res.json())
+.then(data=>{
 
+if(data.loggedIn){
+  document.getElementById("loginBtn")?.style.display="none";
+  document.getElementById("logoutBtn")?.style.display="inline-block";
+}else{
+  document.getElementById("loginBtn")?.style.display="inline-block";
+  document.getElementById("logoutBtn")?.style.display="none";
+}
+
+});
 /* HAMBURGER FIX */
 function toggleSidebar(){
   document.getElementById("sidebar").classList.toggle("active");
@@ -351,16 +368,18 @@ box.innerHTML+=`
 
 <strong>${issue.category} – ${issue.location}</strong><br>
 
+<p style="margin:6px 0;color:#555;">
+${issue.description}
+</p>
+
 <span class="badge ${issue.status==="Resolved"?"resolved":"pending"}">
 ${issue.status}
 </span>
 
-${issue.photo ? `<br><img src="${issue.photo}" style="width:100px;border-radius:8px;margin-top:5px;">` : ""}
+${issue.photo ? `<br><img src="${issue.photo}" style="width:120px;border-radius:8px;margin-top:5px;">` : ""}
 
 </div>
 `;
-
-});
 
 document.getElementById("totalCount").innerText=issues.length;
 document.getElementById("resolvedCount").innerText=resolved;
@@ -414,11 +433,14 @@ reader.readAsDataURL(file);
 }
 
 /* LOGOUT */
-
 function logout(){
-fetch(API_URL+"/api/auth/logout",{method:"POST",credentials:"include"});
-window.location.href="login.html";
+  fetch(API_URL+"/api/auth/logout",{
+    method:"POST",
+    credentials:"include"
+  });
+  window.location.href="login.html";
 }
+
 </script>
 
 <footer>

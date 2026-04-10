@@ -187,7 +187,15 @@ grid-column:1;
 </div>
 
 <div class="hamburger" onclick="toggleSidebar()">☰</div>
+<div class="topbar">
 
+<button id="loginBtn" onclick="location.href='login.html'">Login</button>
+
+<button id="logoutBtn" onclick="logout()" style="display:none;">
+Logout
+</button>
+
+</div>
 <div class="main">
 
 <div class="header">
@@ -247,7 +255,19 @@ Civic Voice © 2026 | Professional Government Portal
 <script>
 
 const API_URL="https://civic-voice-backend-1.onrender.com";
+fetch(API_URL+"/api/auth/check",{credentials:"include"})
+.then(res=>res.json())
+.then(data=>{
 
+if(data.loggedIn){
+  document.getElementById("loginBtn")?.style.display="none";
+  document.getElementById("logoutBtn")?.style.display="inline-block";
+}else{
+  document.getElementById("loginBtn")?.style.display="inline-block";
+  document.getElementById("logoutBtn")?.style.display="none";
+}
+
+});
 function toggleSidebar(){
 document.getElementById("sidebar").classList.toggle("active");
 }
@@ -337,7 +357,13 @@ alert(err.message);
 });
 
 }
-
+function logout(){
+  fetch(API_URL+"/api/auth/logout",{
+    method:"POST",
+    credentials:"include"
+  });
+  window.location.href="login.html";
+}
 </script>
 
 
