@@ -208,6 +208,12 @@ color:white;
 text-align:center;
 padding:20px;
 }
+.card p{
+  font-size:14px;
+  color:#555;
+  margin-top:10px;
+  line-height:1.5;
+}
 
 </style>
 </head>
@@ -237,10 +243,37 @@ padding:20px;
 </section>
 
 <section class="services">
-<div class="card"><h3>🚧 Road Issues</h3></div>
-<div class="card"><h3>🗑 Garbage</h3></div>
-<div class="card"><h3>💧 Water Leakage</h3></div>
-<div class="card"><h3>💡 Streetlights</h3></div>
+<div class="card">
+  <h3>🚧 Road Issues</h3>
+  <p>
+    Report potholes, broken roads, damaged footpaths, or unsafe streets.
+    Help authorities maintain smooth and safe transportation.
+  </p>
+</div>
+
+<div class="card">
+  <h3>🗑 Garbage</h3>
+  <p>
+    Report garbage overflow, illegal dumping, or unclean public areas.
+    Keep your city clean and hygienic.
+  </p>
+</div>
+
+<div class="card">
+  <h3>💧 Water Leakage</h3>
+  <p>
+    Report leaking pipelines, water wastage, or drainage issues.
+    Help save water and prevent damage.
+  </p>
+</div>
+
+<div class="card">
+  <h3>💡 Streetlights</h3>
+  <p>
+    Report non-working or damaged streetlights.
+    Improve visibility and ensure safety at night.
+  </p>
+</div>
 </section>
 
 <section class="stats">
@@ -348,15 +381,50 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
 
 function loadMapMarkers(issues){
-  issues.forEach(issue=>{
-    if(issue.latitude && issue.longitude){
-      L.marker([issue.latitude,issue.longitude])
-      .addTo(map)
-      .bindPopup(issue.category);
-    }
-  });
-}
 
+  issues.forEach(issue=>{
+
+    const lat = parseFloat(issue.latitude);
+    const lng = parseFloat(issue.longitude);
+
+    if(!isNaN(lat) && !isNaN(lng)){
+
+      // ✅ Fix image URL
+      let imgUrl = "";
+
+      if(issue.photo){
+        imgUrl = issue.photo.startsWith("http")
+          ? issue.photo
+          : API_BASE + issue.photo;
+      }
+
+      // ✅ Add marker + popup
+      L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(`
+        <div style="width:200px">
+          
+          <h4>${issue.category}</h4>
+          
+          <p><b>📍 ${issue.location}</b></p>
+
+          <p>${issue.description}</p>
+
+          ${
+            imgUrl 
+            ? `<img src="${imgUrl}" 
+                   style="width:100%;border-radius:8px;">`
+            : ""
+          }
+
+        </div>
+      `);
+
+    }
+
+  });
+
+}
 loadLatestIssues();
 </script>
 <footer>
