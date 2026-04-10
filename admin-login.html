@@ -140,43 +140,87 @@ button{
 </div>
 
 <script>
-const API_URL="https://civic-voice-backend-1.onrender.com";
+fetch(API_URL+"/api/admin/all")
+.then(res=>res.json())
+.then(data=>{
 
+const box=document.getElementById("adminIssues");
+
+data.forEach(issue=>{
+
+box.innerHTML+=`
+<div>
+<b>${issue.category}</b> - ${issue.location}<br>
+${issue.description}<br>
+
+<button onclick="update('${issue._id}','Resolved')">Resolve</button>
+<button onclick="update('${issue._id}','Pending')">Pending</button>
+</div>
+`;
+
+});
+
+});
+
+function update(id,status){
+
+fetch(API_URL+"/api/admin/status/"+id,{
+method:"PUT",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({status})
+})
+.then(()=>location.reload());
+
+}
 function toggleSidebar(){
-document.getElementById("sidebar").classList.toggle("active");
+  document.getElementById("sidebar").classList.toggle("active");
 }
 
 function login(){
+  const email = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+  const msg = document.getElementById("msg");
 
-const email=document.getElementById("user").value.trim();
-const password=document.getElementById("pass").value.trim();
-const msg=document.getElementById("msg");
+  msg.innerText = "";
 
-if(!email || !password){
-msg.innerText="Enter details";
-return;
-}
+  if(!email || !password){
+    msg.innerText = "Please enter username and password";
+    return;
+  }
 
-fetch(API_URL+"/api/auth/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-credentials:"include",
-body:JSON.stringify({email,password})
-})
-.then(res=>res.json())
-.then(data=>{
-if(data.role==="admin"){
-window.location.href="admin.html";
-}else{
-msg.innerText="Not admin";
-}
-})
-.catch(()=>{
-msg.innerText="Server error";
-});
+  fetch("https://civic-voice-backend-1.onrender.com/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({ email, password })
+  })
+  .then(async res => {
+    const data = await res.json();
 
+    if(res.ok){
+      localStorage.setItem("civicUser", JSON.stringify(data.user));
+
+      if(data.role === "admin"){
+        localStorage.setItem("civicAdmin", "true");
+        window.location.href = "Admin.html";
+      } else {
+        localStorage.removeItem("civicAdmin");
+        msg.innerText = "This login is only for admin";
+      }
+    } else {
+      msg.innerText = data.message || "Login failed";
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    msg.innerText = "Server error. Try again later.";
+  });
 }
 </script>
+
+
 <br><br>
 <footer>
   <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px; height:30px; vertical-align:middle;"> Civic Voice © 2026 | Professional Government Portal

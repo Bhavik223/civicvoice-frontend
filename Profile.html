@@ -380,6 +380,16 @@ ${issue.photo ? `<br><img src="${issue.photo}" style="width:120px;border-radius:
 
 </div>
 `;
+<span class="badge ${issue.status==="Resolved"?"resolved":"pending"}">
+${issue.status}
+</span>
+
+${issue.photo ? `<br><img src="${issue.photo}" style="width:100px;border-radius:8px;margin-top:5px;">` : ""}
+
+</div>
+`;
+
+});
 
 document.getElementById("totalCount").innerText=issues.length;
 document.getElementById("resolvedCount").innerText=resolved;
@@ -433,12 +443,10 @@ reader.readAsDataURL(file);
 }
 
 /* LOGOUT */
+
 function logout(){
-  fetch(API_URL+"/api/auth/logout",{
-    method:"POST",
-    credentials:"include"
-  });
-  window.location.href="login.html";
+fetch(API_URL+"/api/auth/logout",{method:"POST",credentials:"include"});
+window.location.href="login.html";
 }
 
 </script>

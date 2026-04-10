@@ -310,39 +310,38 @@ Logout
 
 <script>
 const API_BASE = "https://civic-voice-backend-1.onrender.com";
-
-/* LOGIN / LOGOUT TOGGLE */
 fetch(API_BASE+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
 .then(data=>{
-if(data.loggedIn){
-  document.getElementById("loginBtn").style.display="none";
-  document.getElementById("logoutBtn").style.display="inline-block";
-}else{
-  document.getElementById("loginBtn").style.display="inline-block";
-  document.getElementById("logoutBtn").style.display="none";
-}
-});
 
-/* SIDEBAR */
+if(data.loggedIn){
+  document.getElementById("loginBtn")?.style.display="none";
+  document.getElementById("logoutBtn")?.style.display="inline-block";
+}else{
+  document.getElementById("loginBtn")?.style.display="inline-block";
+  document.getElementById("logoutBtn")?.style.display="none";
+}
+
+});
 function toggleSidebar(){
   document.getElementById("sidebar").classList.toggle("active");
 }
 
-/* LOGOUT */
-function logout(){
-  fetch(API_BASE+"/api/auth/logout",{
-    method:"POST",
-    credentials:"include"
-  });
-  window.location.href="login.html";
-}
-
 /* IMAGE FIX */
-function getImageUrl(photo){
-  if(!photo) return "images/cv-logo.png";
-  if(photo.startsWith("http")) return photo;
+function getImageUrl(photo) {
+  if (!photo) return "images/cv-logo.png";
+
+  // If Cloudinary image
+  if (photo.startsWith("http")) {
+    return photo;
+  }
+
+  // Old local images (optional fallback)
   return API_BASE + photo;
+}
+/* STATUS */
+function getStatusText(status){
+  return status || "Pending";
 }
 
 /* LOAD ISSUES */
@@ -350,27 +349,33 @@ async function loadLatestIssues(){
   const container = document.getElementById("latestIssues");
 
   try{
-    const res = await fetch(API_BASE+"/api/issues");
+    const res = await fetch(`${API_BASE}/api/issues`);
     const issues = await res.json();
 
     const latest = issues.slice(0,4);
 
-    container.innerHTML = latest.map(issue=>`
+    container.innerHTML = latest.map(issue=>{
+      const img = getImageUrl(issue.photo);
+
+      return `
       <div class="issue-card">
-        <img src="${getImageUrl(issue.photo)}">
+        <img src="${img}" onerror="this.src='images/cv-logo.png'">
+
         <div>
           <h3>${issue.category}</h3>
           <p><b>Location:</b> ${issue.location}</p>
-          <p><b>Status:</b> ${issue.status || "Pending"}</p>
+          <p><b>Status:</b> ${getStatusText(issue.status)}</p>
           <p>${issue.description}</p>
         </div>
       </div>
-    `).join("");
+      `;
+    }).join("");
 
     updateStats(issues);
     loadMapMarkers(issues);
 
-  }catch{
+  }catch(err){
+    console.log(err);
     container.innerHTML="Error loading issues";
   }
 }
@@ -378,8 +383,10 @@ async function loadLatestIssues(){
 /* STATS */
 function updateStats(issues){
   document.getElementById("totalIssues").innerText = issues.length;
+
   document.getElementById("resolvedIssues").innerText =
     issues.filter(i=>i.status==="Resolved").length;
+
   document.getElementById("pendingIssues").innerText =
     issues.filter(i=>i.status!=="Resolved").length;
 }
@@ -389,28 +396,86 @@ const map = L.map("map").setView([19.0760,72.8777],12);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 .addTo(map);
+fetch(API_URL+"/api/issues")
+.then(res=>res.json())
+.then(issues=>{
 
-function loadMapMarkers(issues){
-  issues.forEach(issue=>{
-    const lat=parseFloat(issue.latitude);
-    const lng=parseFloat(issue.longitude);
+issues.forEach(issue=>{
 
-    if(!isNaN(lat) && !isNaN(lng)){
-      const img = getImageUrl(issue.photo);
+if(issue.latitude && issue.longitude){
 
-      L.marker([lat,lng])
-      .addTo(map)
-      .bindPopup(`
-        <b>${issue.category}</b><br>
-        ${issue.location}<br>
-        <p>${issue.description}</p>
-        ${issue.photo ? `<img src="${img}" width="150">` : ""}
-      `);
-    }
-  });
+L.marker([issue.latitude, issue.longitude])
+.addTo(map)
+.bindPopup(`
+<b>${issue.category}</b><br>
+${issue.location}<br>
+
+<p>${issue.description}</p>
+
+${issue.photo ? `<img src="${issue.photo}" width="150">` : ""}
+`);
+
 }
 
+});
+
+});
+function loadMapMarkers(issues){
+
+ console.log("ALL ISSUES:", issues); // 👈 ADD THIS
+
+  issues.forEach(issue=>{
+    console.log("LAT:", issue.latitude, "LNG:", issue.longitude);
+
+    const lat = parseFloat(issue.latitude);
+    const lng = parseFloat(issue.longitude);
+
+    if(!isNaN(lat) && !isNaN(lng)){
+
+      // ✅ Fix image URL
+      let imgUrl = "";
+
+      if(issue.photo){
+        imgUrl = issue.photo.startsWith("http")
+          ? issue.photo
+          : API_BASE + issue.photo;
+      }
+
+      // ✅ Add marker + popup
+      L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(`
+        <div style="width:200px">
+          
+          <h4>${issue.category}</h4>
+          
+          <p><b>📍 ${issue.location}</b></p>
+
+          <p>${issue.description}</p>
+
+          ${
+            imgUrl 
+            ? `<img src="${imgUrl}" 
+                   style="width:100%;border-radius:8px;">`
+            : ""
+          }
+
+        </div>
+      `);
+
+    }
+
+  });
+
+}
 loadLatestIssues();
+function logout(){
+  fetch(API_URL+"/api/auth/logout",{
+    method:"POST",
+    credentials:"include"
+  });
+  window.location.href="login.html";
+}
 </script>
 <footer>
   <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px;height:30px;vertical-align:middle;">

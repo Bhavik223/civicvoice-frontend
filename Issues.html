@@ -269,94 +269,205 @@ Logout
   Civic Voice © 2026 | Professional Government Portal
 </footer>
 <script>
-const API="https://civic-voice-backend-1.onrender.com";
 
-/* LOGIN LOGOUT */
+const API="https://civic-voice-backend-1.onrender.com";
 fetch(API+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
 .then(data=>{
+
 if(data.loggedIn){
-  document.getElementById("loginBtn").style.display="none";
-  document.getElementById("logoutBtn").style.display="inline-block";
+  document.getElementById("loginBtn")?.style.display="none";
+  document.getElementById("logoutBtn")?.style.display="inline-block";
 }else{
-  document.getElementById("loginBtn").style.display="inline-block";
-  document.getElementById("logoutBtn").style.display="none";
+  document.getElementById("loginBtn")?.style.display="inline-block";
+  document.getElementById("logoutBtn")?.style.display="none";
 }
+
 });
-
-/* SIDEBAR */
-function toggleSidebar(){
-  document.getElementById("sidebar").classList.toggle("active");
-}
-
-/* LOGOUT */
-function logout(){
-  fetch(API+"/api/auth/logout",{
-    method:"POST",
-    credentials:"include"
-  });
-  window.location.href="login.html";
-}
-
 let issues=[];
 
-/* LOAD */
-function loadIssues(){
-fetch(API+"/api/issues")
+/* SIDEBAR */
+
+function toggleSidebar(){
+document.getElementById("sidebar").classList.toggle("active");
+}
+
+/* ADMIN CHECK */
+
+fetch(API+"/api/auth/me")
 .then(res=>res.json())
 .then(data=>{
-issues=data||[];
+if(data.user && data.user.role==="admin"){
+document.getElementById("adminLink").style.display="block";
+}
+})
+.catch(()=>{});
+
+/* LOAD ISSUES */
+
+function loadIssues(){
+
+fetch(API+"/api/issues")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+issues = data || [];
+
 updateStats();
+
 renderIssues(issues);
-});
+
+})
+
+.catch(err=>console.error("Issue load error:",err));
+
 }
 
 window.onload=loadIssues;
 
 /* STATS */
+
 function updateStats(){
-document.getElementById("totalIssues").innerText=issues.length;
-document.getElementById("pendingIssues").innerText=
-issues.filter(i=>i.status==="Pending").length;
-document.getElementById("resolvedIssues").innerText=
-issues.filter(i=>i.status==="Resolved").length;
+
+document.getElementById("totalIssues").innerText = issues.length;
+
+document.getElementById("pendingIssues").innerText =
+issues.filter(i => i.status === "Pending").length;
+
+document.getElementById("resolvedIssues").innerText =
+issues.filter(i => i.status === "Resolved").length;
+
 }
 
 /* RENDER */
+
 function renderIssues(list){
+
 const container=document.getElementById("issuesContainer");
+
 container.innerHTML="";
 
 list.forEach(issue=>{
 
-let img = issue.photo
-  ? (issue.photo.startsWith("http") ? issue.photo : API+issue.photo)
-  : "https://via.placeholder.com/600x220";
+let statusClass="pending";
 
-container.innerHTML+=`
-<div class="issue-card">
-<img class="issue-img" src="${img}">
+if(issue.status==="Resolved") statusClass="resolved";
+if(issue.status==="In Progress") statusClass="progress";
+
+let card=document.createElement("div");
+
+card.className="issue-card";
+
+card.innerHTML=`
+
+<img class="issue-img"
+src="${
+  issue.photo
+    ? (issue.photo.startsWith("http") ? issue.photo : API + issue.photo)
+    : 'https://via.placeholder.com/600x220'
+}"onclick="zoomImage(this.src)">
+
 <div class="issue-body">
+
 <h3>${issue.category}</h3>
-<p><b>Location:</b> ${issue.location}</p>
-<p><b>Status:</b> ${issue.status}</p>
-<p>${issue.description}</p>
+
+<p class="meta">
+<b>Location:</b> ${issue.location}
+</p>
+
+<p class="meta">
+<b>Status:</b> <span class="badge ${statusClass}">
+${issue.status}
+</span>
+</p>
+
+<p class="meta">
+${issue.description}
+</p>
+
+<div class="actions">
+
+<button class="btn map-btn"
+onclick="openMap('${issue.location}')">
+📍 Map
+</button>
+
+<button class="btn vote-btn"
+onclick="voteIssue()">
+👍 Support
+</button>
+
 </div>
+
 </div>
 `;
+
+container.appendChild(card);
+
 });
+
+}
+
+/* MAP */
+
+function openMap(loc){
+
+window.open(
+"https://www.google.com/maps/search/"+encodeURIComponent(loc),
+"_blank"
+);
+
 }
 
 /* SEARCH */
+
 document.getElementById("searchInput")
 .addEventListener("input",function(){
+
 let q=this.value.toLowerCase();
-renderIssues(
-issues.filter(i=>
-(i.category||"").toLowerCase().includes(q) ||
-(i.location||"").toLowerCase().includes(q)
-)
+
+let filtered = issues.filter(i =>
+
+(i.category || "").toLowerCase().includes(q) ||
+(i.location || "").toLowerCase().includes(q)
+
 );
+
+renderIssues(filtered);
+
 });
-</script></body>
+
+/* IMAGE ZOOM */
+
+function zoomImage(src){
+
+let win=window.open("");
+
+win.document.write(`<img src="${src}" style="width:100%">`);
+
+}
+
+/* VOTE */
+
+function voteIssue(){
+
+alert("Thanks for supporting this issue 👍");
+
+}
+
+/* AUTO REFRESH */
+
+setInterval(loadIssues,15000);
+function logout(){
+  fetch(API_URL+"/api/auth/logout",{
+    method:"POST",
+    credentials:"include"
+  });
+  window.location.href="login.html";
+}
+</script>
+
+</body>
 </html>
