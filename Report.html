@@ -255,31 +255,30 @@ Civic Voice © 2026 | Professional Government Portal
 <script>
 
 const API_URL="https://civic-voice-backend-1.onrender.com";
+
+/* LOGIN TOGGLE */
 fetch(API_URL+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
 .then(data=>{
-
 if(data.loggedIn){
-  document.getElementById("loginBtn")?.style.display="none";
-  document.getElementById("logoutBtn")?.style.display="inline-block";
+  document.getElementById("loginBtn").style.display="none";
+  document.getElementById("logoutBtn").style.display="inline-block";
 }else{
-  document.getElementById("loginBtn")?.style.display="inline-block";
-  document.getElementById("logoutBtn")?.style.display="none";
+  document.getElementById("loginBtn").style.display="inline-block";
+  document.getElementById("logoutBtn").style.display="none";
 }
 
+if(data.loggedIn && data.user?.role==="admin"){
+  document.getElementById("adminLink").style.display="block";
+}
 });
+
+/* SIDEBAR */
 function toggleSidebar(){
 document.getElementById("sidebar").classList.toggle("active");
 }
 
-fetch(API_URL+"/api/auth/check",{credentials:"include"})
-.then(res=>res.json())
-.then(data=>{
-if(data.loggedIn && data.user && data.user.role==="admin"){
-document.getElementById("adminLink").style.display="block";
-}
-});
-
+/* GEO LOCATION */
 let latitude=null;
 let longitude=null;
 
@@ -290,6 +289,16 @@ longitude=position.coords.longitude;
 });
 }
 
+/* LOGOUT */
+function logout(){
+fetch(API_URL+"/api/auth/logout",{
+method:"POST",
+credentials:"include"
+});
+window.location.href="login.html";
+}
+
+/* SUBMIT ISSUE */
 function submitComplaint(){
 
 const name=document.getElementById("name").value.trim();
@@ -297,7 +306,7 @@ const location=document.getElementById("location").value.trim();
 const category=document.getElementById("category").value;
 const description=document.getElementById("details").value.trim();
 
-const fileInput=document.querySelector("input[type='file']");
+const fileInput=document.getElementById("photo");
 const photo=fileInput.files[0];
 
 if(!name || !location || !description || category==="Select Category"){
@@ -314,6 +323,7 @@ formData.append("description",description);
 
 formData.append("latitude", latitude || "");
 formData.append("longitude", longitude || "");
+
 if(photo){
 formData.append("photo",photo);
 }
@@ -323,18 +333,16 @@ method:"POST",
 credentials:"include",
 body:formData
 })
-.then(async res => {
-  const data = await res.json();
+.then(async res=>{
+const data=await res.json();
 
-  if (!res.ok) {
-    throw new Error(data.message || "Server error");
-  }
+if(!res.ok){
+throw new Error(data.message || "Server error");
+}
 
-  return data;
+return data;
 })
 .then(data=>{
-
-if(data.issue){
 
 alert("✅ Complaint submitted successfully!");
 
@@ -343,12 +351,6 @@ document.getElementById("location").value="";
 document.getElementById("category").selectedIndex=0;
 document.getElementById("details").value="";
 fileInput.value="";
-
-}else{
-
-alert(data.message || "Submission failed");
-
-}
 
 })
 .catch(err=>{
@@ -359,7 +361,6 @@ alert(err.message);
 }
 
 </script>
-
 
 </body>
 </html>

@@ -374,10 +374,14 @@ function updateStats(issues){
 }
 
 /* MAP */
+const map = L.map("map").setView([19.0760,72.8777],12);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map);
+
 function loadMapMarkers(issues){
 
-  
-  console.log("ALL ISSUES:", issues); // 👈 ADD THIS
+ console.log("ALL ISSUES:", issues); // 👈 ADD THIS
 
   issues.forEach(issue=>{
     console.log("LAT:", issue.latitude, "LNG:", issue.longitude);
