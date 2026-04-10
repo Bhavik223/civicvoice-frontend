@@ -2,94 +2,128 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Login – Civic Voice</title>
+<title>Admin Dashboard – Civic Voice</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-  background:#0A2540;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  font-family:Poppins,sans-serif;
+font-family:Poppins,sans-serif;
+background:#F5F7FA;
+padding:20px;
 }
 
-.login-box{
-  background:white;
-  padding:40px;
-  border-radius:15px;
-  width:350px;
-  text-align:center;
-}
-
-input{
-  width:100%;
-  padding:12px;
-  margin:15px 0;
-  border-radius:8px;
+.issue{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
 }
 
 button{
-  width:100%;
-  background:#1ABC9C;
-  color:white;
-  border:none;
-  padding:12px;
-  border-radius:8px;
+margin:5px;
+padding:8px 12px;
+border:none;
+border-radius:6px;
+background:#1ABC9C;
+color:white;
+cursor:pointer;
 }
 
-#msg{color:red;}
+img{
+margin-top:10px;
+border-radius:8px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="login-box">
-  <h2>🏛 Admin Login</h2>
+<h1>🛠 Admin Dashboard</h1>
 
-  <input id="user" placeholder="Email">
-  <input id="pass" type="password" placeholder="Password">
-
-  <button onclick="login()">Login</button>
-  <p id="msg"></p>
-</div>
+<div id="adminIssues"></div>
 
 <script>
+
 const API="https://civic-voice-backend-1.onrender.com";
 
-function login(){
-
-const email=document.getElementById("user").value.trim();
-const password=document.getElementById("pass").value.trim();
-const msg=document.getElementById("msg");
-
-if(!email || !password){
-msg.innerText="Enter details";
-return;
-}
-
-fetch(API+"/api/auth/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-credentials:"include",
-body:JSON.stringify({email,password})
-})
+/* PROTECT PAGE */
+fetch(API+"/api/auth/check",{credentials:"include"})
 .then(res=>res.json())
 .then(data=>{
-
-if(data.role==="admin"){
-window.location.href="admin.html";
-}else{
-msg.innerText="Not an admin";
+if(!data.loggedIn || data.user.role!=="admin"){
+alert("Access denied");
+window.location.href="admin-login.html";
 }
+});
 
-})
-.catch(()=>{
-msg.innerText="Server error";
+/* LOAD ISSUES */
+function loadAdminIssues(){
+
+fetch(API+"/api/admin/all",{credentials:"include"})
+.then(res=>res.json())
+.then(issues=>{
+
+const box=document.getElementById("adminIssues");
+box.innerHTML="";
+
+issues.forEach(issue=>{
+
+let img = issue.photo
+? (issue.photo.startsWith("http") ? issue.photo : API+issue.photo)
+: "";
+
+box.innerHTML+=`
+<div class="issue">
+
+<h3>${issue.category}</h3>
+
+<p><b>📍 ${issue.location}</b></p>
+
+<p>${issue.description}</p>
+
+<p>Status: <b>${issue.status}</b></p>
+
+${img ? `<img src="${img}" width="150">` : ""}
+
+<br>
+
+<button onclick="updateStatus('${issue._id}','Resolved')">
+Resolve
+</button>
+
+<button onclick="updateStatus('${issue._id}','Pending')">
+Pending
+</button>
+
+</div>
+`;
+
+});
+
 });
 
 }
+
+/* UPDATE STATUS */
+function updateStatus(id,status){
+
+fetch(API+"/api/admin/status/"+id,{
+method:"PUT",
+headers:{"Content-Type":"application/json"},
+credentials:"include",
+body:JSON.stringify({status})
+})
+.then(()=>{
+alert("Updated ✅");
+loadAdminIssues();
+});
+
+}
+
+/* LOAD DATA */
+loadAdminIssues();
+
 </script>
 
 </body>
