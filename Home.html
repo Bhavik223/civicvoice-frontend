@@ -234,8 +234,8 @@ padding:20px;
 <div class="top-buttons">
 <button onclick="window.location='login.html'">Login</button>
 <button onclick="window.location='signup.html'">Signup</button>
+<button onclick="window.location='admin-login.html'">Admin</button>
 </div>
-
 <h1>Empowering Citizens, Improving Cities</h1>
 <p>Report civic issues and track their resolution</p>
 <a href="Report.html" class="cta-btn">Report an Issue</a>
@@ -304,8 +304,21 @@ padding:20px;
 
 <script>
 const API_BASE = "https://civic-voice-backend-1.onrender.com";
+fetch(API_BASE+"/api/auth/check",{credentials:"include"})
+.then(res=>res.json())
+.then(data=>{
 
-function toggleSidebar(){
+if(data.loggedIn){
+  document.querySelector(".top-buttons button:nth-child(1)").style.display="none"; // login
+}else{
+  document.querySelector(".top-buttons button:nth-child(1)").style.display="inline-block";
+}
+
+if(data.loggedIn && data.user.role==="admin"){
+  document.getElementById("adminLink").style.display="block";
+}
+
+});function toggleSidebar(){
   document.getElementById("sidebar").classList.toggle("active");
 }
 
