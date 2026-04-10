@@ -292,9 +292,8 @@ formData.append("location",location);
 formData.append("category",category);
 formData.append("description",description);
 
-if(latitude) formData.append("latitude",latitude);
-if(longitude) formData.append("longitude",longitude);
-
+formData.append("latitude", latitude || "");
+formData.append("longitude", longitude || "");
 if(photo){
 formData.append("photo",photo);
 }

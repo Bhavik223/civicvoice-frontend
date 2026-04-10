@@ -254,6 +254,10 @@ margin-top:40px;
 <div>
 <h1 id="userName">Loading...</h1>
 <p id="userRole">Citizen</p>
+<button onclick="updateProfile()" style="margin-top:10px;">
+Save Profile
+</button>
+
 </div>
 
 </div>
@@ -295,28 +299,42 @@ margin-top:40px;
 
 const API_URL="https://civic-voice-backend-1.onrender.com";
 
-const user = JSON.parse(localStorage.getItem("civicUser"));
-
-if(!user){
-alert("Please login first");
-window.location.href="login.html";
+/* HAMBURGER FIX */
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("active");
 }
 
-/* PROFILE */
+/* LOAD USER */
+let currentUser=null;
 
-function loadProfile(){
-document.getElementById("userName").innerText=user.name;
-}
+fetch(API_URL+"/api/auth/check",{credentials:"include"})
+.then(res=>res.json())
+.then(data=>{
 
-/* LOAD USER ISSUES */
+  if(!data.loggedIn){
+    alert("Login first");
+    window.location.href="login.html";
+    return;
+  }
+
+  currentUser=data.user;
+
+  document.getElementById("userName").innerText=currentUser.name;
+
+  if(currentUser.profilePic){
+    document.getElementById("profileImg").src=currentUser.profilePic;
+  }
+
+  loadMyIssues();
+});
+
+/* LOAD ISSUES */
 
 function loadMyIssues(){
 
 fetch(API_URL+"/api/issues/my",{credentials:"include"})
 .then(res=>res.json())
-.then(data=>{
-
-const issues = Array.isArray(data) ? data : [];
+.then(issues=>{
 
 let pending=0,resolved=0;
 
@@ -330,10 +348,15 @@ else pending++;
 
 box.innerHTML+=`
 <div class="issue-item">
+
 <strong>${issue.category} – ${issue.location}</strong><br>
+
 <span class="badge ${issue.status==="Resolved"?"resolved":"pending"}">
 ${issue.status}
 </span>
+
+${issue.photo ? `<br><img src="${issue.photo}" style="width:100px;border-radius:8px;margin-top:5px;">` : ""}
+
 </div>
 `;
 
@@ -347,27 +370,55 @@ document.getElementById("pendingCount").innerText=pending;
 
 }
 
-/* ADMIN */
+/* UPDATE PROFILE */
 
-fetch(API_URL+"/api/auth/check",{credentials:"include"})
-.then(res=>res.json())
-.then(data=>{
-if(data.loggedIn && data.user.role==="admin"){
-document.getElementById("adminLink").style.display="block";
+function updateProfile(){
+
+const name=document.getElementById("userName").innerText;
+const file=document.getElementById("upload").files[0];
+
+const formData=new FormData();
+formData.append("name",name);
+
+if(file){
+formData.append("photo",file);
 }
+
+fetch(API_URL+"/api/auth/update",{
+method:"PUT",
+credentials:"include",
+body:formData
+})
+.then(res=>res.json())
+.then(()=>{
+alert("Profile Updated ✅");
+location.reload();
 });
+
+}
+
+/* IMAGE PREVIEW */
+
+function loadPic(event){
+
+const file=event.target.files[0];
+
+if(file){
+const reader=new FileReader();
+reader.onload=function(e){
+document.getElementById("profileImg").src=e.target.result;
+};
+reader.readAsDataURL(file);
+}
+
+}
 
 /* LOGOUT */
 
 function logout(){
 fetch(API_URL+"/api/auth/logout",{method:"POST",credentials:"include"});
-localStorage.clear();
 window.location.href="login.html";
 }
-
-loadProfile();
-loadMyIssues();
-
 </script>
 
 <footer>

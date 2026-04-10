@@ -382,7 +382,10 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 
 function loadMapMarkers(issues){
 
+ console.log("ALL ISSUES:", issues); // 👈 ADD THIS
+
   issues.forEach(issue=>{
+    console.log("LAT:", issue.latitude, "LNG:", issue.longitude);
 
     const lat = parseFloat(issue.latitude);
     const lng = parseFloat(issue.longitude);
