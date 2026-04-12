@@ -412,56 +412,58 @@ const defaultIcon = new L.Icon({
 });
 function loadMapMarkers(issues){
 
-map.eachLayer(layer=>{
-  if(layer instanceof L.Marker){
-    map.removeLayer(layer);
-  }
-});
+  // remove old markers
+  map.eachLayer(layer=>{
+    if(layer instanceof L.Marker){
+      map.removeLayer(layer);
+    }
+  });
+
+  const validLocations = [];
 
   issues.forEach(issue=>{
 
- const lat = issue.latitude ? parseFloat(issue.latitude) : 19.0760;
-const lng = issue.longitude ? parseFloat(issue.longitude) : 72.8777;
+    const lat = parseFloat(issue.latitude);
+    const lng = parseFloat(issue.longitude);
 
- if(!isNaN(lat) && !isNaN(lng)){
+    // skip invalid location
+    if(isNaN(lat) || isNaN(lng)){
+      return;
+    }
 
-      let icon = defaultIcon;
+    validLocations.push([lat, lng]);
 
-      if(issue.status === "Resolved"){
-        icon = resolvedIcon;
-      } else if(issue.status === "Pending"){
-        icon = pendingIcon;
-      }
+    let icon = defaultIcon;
 
-      let imgUrl = issue.photo
-        ? (issue.photo.startsWith("http") ? issue.photo : API_BASE + issue.photo)
-        : "";
+    if(issue.status === "Resolved"){
+      icon = resolvedIcon;
+    } else if(issue.status === "Pending"){
+      icon = pendingIcon;
+    }
 
-      L.marker([lat, lng], { icon })
+    let imgUrl = issue.photo
+      ? (issue.photo.startsWith("http") ? issue.photo : API_BASE + issue.photo)
+      : "";
+
+    L.marker([lat, lng], { icon })
       .addTo(map)
       .bindPopup(`
         <div style="width:200px">
-
           <h4>${issue.category}</h4>
-
           <p><b>📍 ${issue.location}</b></p>
-
           <p>${issue.description}</p>
-
-          ${
-            imgUrl
-            ? `<img src="${imgUrl}" style="width:100%;border-radius:8px;">`
-            : ""
-          }
-
+          ${imgUrl ? `<img src="${imgUrl}" style="width:100%;border-radius:8px;">` : ""}
         </div>
       `);
 
-    }
-
   });
 
-}
+  // auto zoom map
+map.fitBounds(validLocations, {
+  padding: [50, 50],
+  animate: true,
+  duration: 1
+});
 setInterval(async () => {
   try {
     const res = await fetch(`${API_BASE}/api/issues`);
