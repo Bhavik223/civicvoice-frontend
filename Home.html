@@ -422,13 +422,12 @@ function loadMapMarkers(issues){
 
   issues.forEach(issue=>{
 
-const lat = parseFloat(issue.latitude);
-const lng = parseFloat(issue.longitude);
+    const lat = parseFloat(issue.latitude);
+    const lng = parseFloat(issue.longitude);
 
-if(isNaN(lat) || isNaN(lng)){
-  console.log("❌ Skipping invalid location:", issue);
-  return;
-}
+    if(isNaN(lat) || isNaN(lng)){
+      return;
+    }
 
     validLocations.push([lat, lng]);
 
@@ -440,9 +439,7 @@ if(isNaN(lat) || isNaN(lng)){
       icon = pendingIcon;
     }
 
-    let imgUrl = issue.photo
-      ? (issue.photo.startsWith("http") ? issue.photo : API_BASE + issue.photo)
-      : "";
+    const imgUrl = getImageUrl(issue.photo);
 
     L.marker([lat, lng], { icon })
       .addTo(map)
@@ -451,37 +448,26 @@ if(isNaN(lat) || isNaN(lng)){
           <h4>${issue.category}</h4>
           <p><b>📍 ${issue.location}</b></p>
           <p>${issue.description}</p>
-          ${imgUrl ? `<img src="${imgUrl}" style="width:100%;border-radius:8px;">` : ""}
+          <img src="${imgUrl}" style="width:100%;border-radius:8px;">
         </div>
       `);
-
   });
 
-  // ✅ SAFE FIT BOUNDS
-if(validLocations.length > 1){
-
-  // 🔥 Multiple markers → fit nicely
-  const bounds = L.latLngBounds(validLocations);
-
-  map.flyToBounds(bounds, {
-    padding: [60, 60],
-    duration: 1.5,
-    easeLinearity: 0.25
-  });
-
-}else if(validLocations.length === 1){
-
-  // 🎯 Single marker → center nicely
-  map.flyTo(validLocations[0], 15, {
-    duration: 1.2
-  });
-
-}else{
-
-  // 🚨 No data → default Mumbai
-  map.setView([19.0760, 72.8777], 11);
-
+  // 🔥 SMART ZOOM (SAFE)
+  if(validLocations.length > 1){
+    const bounds = L.latLngBounds(validLocations);
+    map.flyToBounds(bounds, {
+      padding: [60, 60],
+      duration: 1.5
+    });
+  } else if(validLocations.length === 1){
+    map.flyTo(validLocations[0], 15, { duration: 1.2 });
+  } else {
+    map.setView([19.0760,72.8777],11);
+  }
 }
+
+/* ================= LIVE UPDATE ================= */
 setInterval(async () => {
   try {
     const res = await fetch(`${API_BASE}/api/issues`);
@@ -494,7 +480,10 @@ setInterval(async () => {
     console.log("Live update error", err);
   }
 }, 5000);
+
+/* ================= INITIAL LOAD ================= */
 loadLatestIssues();
+
 </script>
 <footer>
   <img src="images/cv-logo.png" alt="Civic Voice Logo" style="width:30px;height:30px;vertical-align:middle;">
