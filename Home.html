@@ -422,12 +422,13 @@ function loadMapMarkers(issues){
 
   issues.forEach(issue=>{
 
-    const lat = parseFloat(issue.latitude);
-    const lng = parseFloat(issue.longitude);
+const lat = parseFloat(issue.latitude);
+const lng = parseFloat(issue.longitude);
 
-    if(isNaN(lat) || isNaN(lng)){
-      return;
-    }
+if(isNaN(lat) || isNaN(lng)){
+  console.log("❌ Skipping invalid location:", issue);
+  return;
+}
 
     validLocations.push([lat, lng]);
 
