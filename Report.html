@@ -320,9 +320,13 @@ formData.append("name",name);
 formData.append("location",location);
 formData.append("category",category);
 formData.append("description",description);
-
-formData.append("latitude", latitude || "");
-formData.append("longitude", longitude || "");
+if(latitude && longitude){
+  formData.append("latitude", latitude);
+  formData.append("longitude", longitude);
+}else{
+  alert("⚠️ Please allow location access for accurate map pin");
+  return;
+}
 
 if(photo){
 formData.append("photo",photo);
