@@ -283,10 +283,18 @@ let latitude=null;
 let longitude=null;
 
 if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(function(position){
-latitude=position.coords.latitude;
-longitude=position.coords.longitude;
-});
+navigator.geolocation.getCurrentPosition(
+
+function(position){
+  latitude = position.coords.latitude;
+  longitude = position.coords.longitude;
+},
+
+function(error){
+  alert("⚠️ Location permission denied. Please enable GPS.");
+}
+
+);
 }
 
 /* LOGOUT */
