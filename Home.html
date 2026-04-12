@@ -412,7 +412,6 @@ const defaultIcon = new L.Icon({
 });
 function loadMapMarkers(issues){
 
-  // remove old markers
   map.eachLayer(layer=>{
     if(layer instanceof L.Marker){
       map.removeLayer(layer);
@@ -426,7 +425,6 @@ function loadMapMarkers(issues){
     const lat = parseFloat(issue.latitude);
     const lng = parseFloat(issue.longitude);
 
-    // skip invalid location
     if(isNaN(lat) || isNaN(lng)){
       return;
     }
@@ -458,12 +456,16 @@ function loadMapMarkers(issues){
 
   });
 
-  // auto zoom map
-map.fitBounds(validLocations, {
-  padding: [50, 50],
-  animate: true,
-  duration: 1
-});
+  // ✅ SAFE FIT BOUNDS
+  if(validLocations.length){
+    map.fitBounds(validLocations, {
+      padding: [50, 50],
+      animate: true,
+      duration: 1
+    });
+  }
+
+}
 setInterval(async () => {
   try {
     const res = await fetch(`${API_BASE}/api/issues`);
