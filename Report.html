@@ -279,23 +279,7 @@ document.getElementById("sidebar").classList.toggle("active");
 }
 
 /* GEO LOCATION */
-let latitude=null;
-let longitude=null;
 
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(
-
-function(position){
-  latitude = position.coords.latitude;
-  longitude = position.coords.longitude;
-},
-
-function(error){
-  alert("⚠️ Location permission denied. Please enable GPS.");
-}
-
-);
-}
 
 /* LOGOUT */
 function logout(){
@@ -307,71 +291,69 @@ window.location.href="login.html";
 }
 
 /* SUBMIT ISSUE */
-function submitComplaint(){
+async function submitComplaint(){
 
-const name=document.getElementById("name").value.trim();
-const location=document.getElementById("location").value.trim();
-const category=document.getElementById("category").value;
-const description=document.getElementById("details").value.trim();
+const name = document.getElementById("name").value.trim();
+const location = document.getElementById("location").value.trim();
+const category = document.getElementById("category").value;
+const description = document.getElementById("details").value.trim();
+const photo = document.getElementById("photo").files[0];
 
-const fileInput=document.getElementById("photo");
-const photo=fileInput.files[0];
-console.log("LAT:", latitude, "LNG:", longitude);
 if(!name || !location || !description || category==="Select Category"){
   alert("Please fill all fields");
-return;
-}
-
-const formData=new FormData();
-
-formData.append("name",name);
-formData.append("location",location);
-formData.append("category",category);
-formData.append("description",description);
-if(latitude !== null && longitude !== null){
-  formData.append("latitude", latitude);
-  formData.append("longitude", longitude);
-}else{
-  alert("⚠️ Please allow location access for accurate map pin");
   return;
 }
 
-if(photo){
-formData.append("photo",photo);
+try{
+
+  // 🌍 Convert location → coordinates
+  const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`);
+  const geoData = await geoRes.json();
+
+  if(!geoData.length){
+    alert("Location not found ❌");
+    return;
+  }
+
+  const latitude = geoData[0].lat;
+  const longitude = geoData[0].lon;
+
+  console.log("📍 Auto Location:", latitude, longitude);
+
+  const formData = new FormData();
+
+  formData.append("name", name);
+  formData.append("location", location);
+  formData.append("category", category);
+  formData.append("description", description);
+  formData.append("latitude", latitude);
+  formData.append("longitude", longitude);
+
+  if(photo){
+    formData.append("photo", photo);
+  }
+
+  const res = await fetch(API_URL+"/api/issues",{
+    method:"POST",
+    credentials:"include",
+    body:formData
+  });
+
+  const data = await res.json();
+
+  if(!res.ok){
+    throw new Error(data.message || "Server error");
+  }
+
+  alert("✅ Complaint submitted successfully!");
+  location.reload();
+
+}catch(err){
+  console.error(err);
+  alert("Error: " + err.message);
 }
 
-fetch(API_URL+"/api/issues",{
-method:"POST",
-credentials:"include",
-body:formData
-})
-.then(async res=>{
-const data=await res.json();
-
-if(!res.ok){
-throw new Error(data.message || "Server error");
 }
-
-return data;
-})
-.then(data=>{
-
-alert("✅ Complaint submitted successfully!");
-
-document.getElementById("name").value="";
-document.getElementById("location").value="";
-document.getElementById("category").selectedIndex=0;
-document.getElementById("details").value="";
-fileInput.value="";
-
-})
-.catch(err=>{
-console.error(err);
-alert(err.message);
-});
-
-}
-
 </script>
 
 </body>
