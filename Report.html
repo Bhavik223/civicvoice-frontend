@@ -316,9 +316,9 @@ const description=document.getElementById("details").value.trim();
 
 const fileInput=document.getElementById("photo");
 const photo=fileInput.files[0];
-
+console.log("LAT:", latitude, "LNG:", longitude);
 if(!name || !location || !description || category==="Select Category"){
-alert("Please fill all fields");
+  alert("Please fill all fields");
 return;
 }
 
@@ -328,7 +328,7 @@ formData.append("name",name);
 formData.append("location",location);
 formData.append("category",category);
 formData.append("description",description);
-if(latitude && longitude){
+if(latitude !== null && longitude !== null){
   formData.append("latitude", latitude);
   formData.append("longitude", longitude);
 }else{
