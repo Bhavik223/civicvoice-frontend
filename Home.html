@@ -458,13 +458,28 @@ if(isNaN(lat) || isNaN(lng)){
   });
 
   // ✅ SAFE FIT BOUNDS
-  if(validLocations.length){
-    map.fitBounds(validLocations, {
-      padding: [50, 50],
-      animate: true,
-      duration: 1
-    });
-  }
+if(validLocations.length > 1){
+
+  // 🔥 Multiple markers → fit nicely
+  const bounds = L.latLngBounds(validLocations);
+
+  map.flyToBounds(bounds, {
+    padding: [60, 60],
+    duration: 1.5,
+    easeLinearity: 0.25
+  });
+
+}else if(validLocations.length === 1){
+
+  // 🎯 Single marker → center nicely
+  map.flyTo(validLocations[0], 15, {
+    duration: 1.2
+  });
+
+}else{
+
+  // 🚨 No data → default Mumbai
+  map.setView([19.0760, 72.8777], 11);
 
 }
 setInterval(async () => {
